@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 
 const HomePage = () => {
-    const { authTokens, logoutUser } = useContext(AuthContext);
-    let [profile, setProfile] = useState([])
+    const { authTokens, logoutUser, user } = useContext(AuthContext);
+    const [profile, setProfile] = useState([])
+    const navigate = useNavigate()
 
     useEffect(() => {
         getProfile()
@@ -26,11 +28,15 @@ const HomePage = () => {
         }
     }
 
+    const handleStart = () => {
+        navigate("/game")
+    }
+
     return (
         <div>
-            <p>You are logged in to the homepage!</p>
-            <p>Name: {profile.first_name} {profile.last_name}</p>
-            <p>Email: {profile.email}</p>
+            <p>Hello, {user.username}</p>
+            <p>Let's start the game:</p>
+            <button onClick={handleStart}>Start</button>
         </div>
     )
 }
