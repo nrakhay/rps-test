@@ -4,13 +4,18 @@ from django.contrib.auth.models import User
 
 class Player(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=100, unique=True)
 
     total_games_played = models.PositiveIntegerField(default=0)
     total_wins = models.PositiveIntegerField(default=0)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["name"], name="name_idx"),
+        ]
+
     def __str__(self):
-        return self.user.username
+        return self.name
 
 
 class GameSession(models.Model):

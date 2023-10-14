@@ -17,21 +17,19 @@ class PlayerSerializer(serializers.ModelSerializer):
 
 
 class GameSessionSerializer(serializers.ModelSerializer):
-    player1_username = serializers.ReadOnlyField(source="player1.username")
-    player2_username = serializers.ReadOnlyField(
-        source="player2.username", default=None
-    )
-    winner_username = serializers.ReadOnlyField(source="winner.username", default=None)
+    player1_name = serializers.ReadOnlyField(source="player1.name")
+    player2_name = serializers.ReadOnlyField(source="player2.name", default=None)
+    winner_name = serializers.ReadOnlyField(source="winner.name", default=None)
 
     class Meta:
         model = GameSession
         fields = (
             "id",
-            "player1_username",
-            "player2_username",
+            "player1_name",
+            "player2_name",
             "player1_choice",
             "player2_choice",
-            "winner_username",
+            "winner_name",
             "status",
             "created_at",
             "updated_at",

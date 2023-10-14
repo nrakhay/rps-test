@@ -5,7 +5,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from base.serializer import PlayerSerializer
+from base.serializer import PlayerSerializer, GameSessionSerializer
+
+from base.models import GameSession, Player
+from base.serializer import GameSessionSerializer, PlayerSerializer
+from rest_framework import generics, status
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -20,6 +24,40 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+
+class ListAllGamesView(generics.ListAPIView):
+    queryset = GameSession.objects.all()
+    serializer_class = GameSessionSerializer
+
+
+class ListAllPlayersView(generics.ListAPIView):
+    queryset = Player.objects.all()
+    serializer_class = PlayerSerializer
+
+
+# @permission_classes([IsAuthenticated])
+class ConnectToGame(generics.GenericAPIView):
+    serializer_class = GameSessionSerializer
+
+    def get_queryset(self):
+        return GameSession.objects.filter(player2__isnull=True)
+
+    def get(self, request, *args, **kwargs):
+        game_session = self.get_queryset().first()
+        username = request.data.get("username")
+
+        player = Player.objects.get(name=username)
+
+        if not game_session:
+            game_session = GameSession.objects.create(player1=player)
+        else:
+            game_session.player2 = player
+            game_session.status = "in_progress"
+            game_session.save()
+
+        serializer = self.get_serializer(game_session)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(["GET"])
