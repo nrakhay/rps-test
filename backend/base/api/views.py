@@ -10,6 +10,7 @@ from base.serializer import PlayerSerializer, GameSessionSerializer
 from base.models import GameSession, Player
 from base.serializer import GameSessionSerializer, PlayerSerializer
 from rest_framework import generics, status
+from rest_framework.generics import GenericAPIView
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -37,7 +38,7 @@ class ListAllPlayersView(generics.ListAPIView):
 
 
 # @permission_classes([IsAuthenticated])
-class ConnectToGame(generics.GenericAPIView):
+class ConnectToGame(GenericAPIView):
     serializer_class = GameSessionSerializer
 
     def get_queryset(self):
@@ -45,7 +46,7 @@ class ConnectToGame(generics.GenericAPIView):
 
     def get(self, request, *args, **kwargs):
         game_session = self.get_queryset().first()
-        username = request.data.get("username")
+        username = request.query_params.get("username")
 
         player = Player.objects.get(name=username)
 
