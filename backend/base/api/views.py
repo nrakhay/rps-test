@@ -37,18 +37,23 @@ class ListAllPlayersView(generics.ListAPIView):
     serializer_class = PlayerSerializer
 
 
-# @permission_classes([IsAuthenticated])
 class ConnectToGame(GenericAPIView):
     serializer_class = GameSessionSerializer
 
     def get_queryset(self):
-        return GameSession.objects.filter(player2__isnull=True)
+        return GameSession.objects.filter(player2__isnull=True, status="waiting")
 
     def get(self, request, *args, **kwargs):
         game_session = self.get_queryset().first()
         username = request.query_params.get("username")
 
         player = Player.objects.get(name=username)
+
+        if game_session and game_session.player1 == player:
+            return Response(
+                {"detail": "you are already in the waiting room"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         if not game_session:
             game_session = GameSession.objects.create(player1=player)

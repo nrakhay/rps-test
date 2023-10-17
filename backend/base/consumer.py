@@ -1,12 +1,19 @@
 import json
 from channels.generic.websocket import AsyncWebsocketConsumer
-from .models import GameSession
+from channels.db import database_sync_to_async
+from .models import GameSession, Player
+from rest_framework_jwt.utils import jwt_decode_handler
 
 
 class GameConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         self.game_id = self.scope["url_route"]["kwargs"]["game_id"]
+        self.token = self.scope["url_route"]["kwargs"]["token"]
         await self.channel_layer.group_add(self.game_id, self.channel_name)
+
+        self.user_id = jwt_decode_handler(self.token).get("user_id", None)
+
+        game_status = await self.get_game_status(self.game_id)
 
         # notify users about new connect
         await self.channel_layer.group_send(
@@ -14,33 +21,36 @@ class GameConsumer(AsyncWebsocketConsumer):
             {
                 "type": "user_connected",
                 "player": self.channel_name,
-                "message": "A new player has connected.",
+                "message": game_status,
             },
         )
 
         await self.accept()
 
+    @database_sync_to_async
+    def get_game_status(self, game_id):
+        return GameSession.objects.get(id=game_id).status
+
     async def disconnect(self, close_code):
         await self.channel_layer.group_discard(self.game_id, self.channel_name)
+        await self.determine_winner_when_left()
 
+    @database_sync_to_async
+    def determine_winner_when_left(self):
         game_session = GameSession.objects.get(id=self.game_id)
 
-        if game_session.player1.name == self.scope["user"].username:
-            game_session.winner = game_session.player2.name
-        elif game_session.player2.name == self.scope["user"].username:
-            game_session.winner = game_session.player1.name
+        if self.user_id == game_session.player1.user.id:
+            game_session.winner = game_session.player2
+        else:
+            game_session.winner = game_session.player1
 
+        print(game_session.winner)
+
+        game_session.status = "completed"
         game_session.save()
 
-        await self.channel_layer.group_send(
-            self.game_id,
-            {
-                "type": "player_disconnected",
-                "message": f"Player {self.scope['user'].username} has disconnected.",
-            },
-        )
-
     async def receive(self, text_data):
+        print("received:", text_data)
         data = json.loads(text_data)
         move = data["move"]
 
@@ -53,7 +63,12 @@ class GameConsumer(AsyncWebsocketConsumer):
         player = event["player"]
         move = event["move"]
 
-        await self.send(text_data=json.dumps({"player": player, "move": move}))
+        if player != self.channel_name:
+            await self.send(
+                text_data=json.dumps(
+                    {"player": player, "move": move, "type": "forward_move"}
+                )
+            )
 
     async def user_connected(self, event):
         player = event["player"]
