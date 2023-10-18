@@ -5,6 +5,7 @@ from .views import (
     ListAllGamesView,
     ListAllPlayersView,
     ConnectToGame,
+    PlayerStatisticsView,
 )
 
 from rest_framework_simplejwt.views import (
@@ -17,5 +18,10 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("games/", ListAllGamesView.as_view(), name="list-all-games"),
     path("players/", ListAllPlayersView.as_view(), name="list-all-players"),
+    path(
+        "players/<int:pk>/statistics/",
+        PlayerStatisticsView.as_view(),
+        name="player-statistics",
+    ),
     path("games/connect", ConnectToGame.as_view(), name="open-game"),
 ]

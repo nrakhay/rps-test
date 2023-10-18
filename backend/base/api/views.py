@@ -11,7 +11,11 @@ from base.serializer import (
 )
 
 from base.models import GameSession, Player
-from base.serializer import GameSessionSerializer, PlayerSerializer
+from base.serializer import (
+    GameSessionSerializer,
+    PlayerSerializer,
+    PlayerStatisticsSerializer,
+)
 from rest_framework import generics, status
 from rest_framework.generics import GenericAPIView
 
@@ -38,6 +42,16 @@ class ListAllGamesView(generics.ListAPIView):
 class ListAllPlayersView(generics.ListAPIView):
     queryset = Player.objects.all()
     serializer_class = PlayerSerializer
+
+
+class PlayerStatisticsView(generics.RetrieveAPIView):
+    queryset = Player.objects.all()
+    serializer_class = PlayerStatisticsSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)
 
 
 class ConnectToGame(GenericAPIView):

@@ -3,6 +3,7 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from .models import GameSession, Player
 from rest_framework_jwt.utils import jwt_decode_handler
+from django.contrib.auth.models import User
 
 
 class GameConsumer(AsyncWebsocketConsumer):
@@ -15,6 +16,8 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         game_status = await self.get_game_status(self.game_id)
 
+        await self.update_player_games_count()
+
         # notify users about new connect
         await self.channel_layer.group_send(
             self.game_id,
@@ -26,6 +29,14 @@ class GameConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
+
+    @database_sync_to_async
+    def update_player_games_count(self):
+        user = User.objects.get(id=self.user_id)
+        player = Player.objects.get(user=user)
+
+        player.total_games_played += 1
+        player.save()
 
     @database_sync_to_async
     def get_game_status(self, game_id):
@@ -41,10 +52,13 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         if self.user_id == game_session.player1.user.id:
             game_session.winner = game_session.player2
+            winner = game_session.player2
         else:
             game_session.winner = game_session.player1
+            winner = game_session.player1
 
-        print(game_session.winner)
+        winner.total_wins += 1
+        winner.save()
 
         game_session.status = "completed"
         game_session.save()
@@ -81,6 +95,10 @@ class GameConsumer(AsyncWebsocketConsumer):
             game_session.winner = game_session.determine_winner()
             game_session.status = "completed"
             game_session.save()
+
+        if game_session.winner:
+            game_session.winner.total_wins += 1
+            game_session.winner.save()
 
     async def forward_move(self, event):
         player = event["player"]
