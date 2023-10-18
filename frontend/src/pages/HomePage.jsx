@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { DataContext } from '../App';
 import AuthContext from '../context/AuthContext';
 
+const baseUrl = process.env.REACT_APP_BASE_URL
+const wsUrl = process.env.REACT_APP_WS_URL
 
 const HomePage = () => {
     const { authTokens, logoutUser, user } = useContext(AuthContext);
@@ -13,7 +15,7 @@ const HomePage = () => {
     const gameIdRef = useRef();
 
     const getProfile = async() => {
-        let response = await fetch('http://127.0.0.1:8000/api/profile', {
+        let response = await fetch(`${baseUrl}/api/profile`, {
         method: 'GET',
         headers:{
             'Content-Type': 'application/json',
@@ -30,7 +32,7 @@ const HomePage = () => {
     }
 
     const handleStart = async () => {
-        const response = await fetch(`http://127.0.0.1:8000/api/games/connect?username=${user.username}`, {
+        const response = await fetch(`${baseUrl}/api/games/connect?username=${user.username}`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -48,7 +50,7 @@ const HomePage = () => {
 
         gameIdRef.current = data.id;
 
-        socketRef.current = new WebSocket(`ws://127.0.0.1:8000/ws/game/${data.id}/${String(authTokens.access)}/`);
+        socketRef.current = new WebSocket(`${wsUrl}/ws/game/${data.id}/${String(authTokens.access)}/`);
         setupSocket(data.id)
         setWaitingForOpponent(true)
     };
