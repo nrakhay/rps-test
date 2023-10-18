@@ -5,7 +5,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
-from base.serializer import PlayerSerializer, GameSessionSerializer
+from base.serializer import (
+    PlayerSerializer,
+    GameSessionSerializer,
+)
 
 from base.models import GameSession, Player
 from base.serializer import GameSessionSerializer, PlayerSerializer

@@ -54,10 +54,33 @@ class GameConsumer(AsyncWebsocketConsumer):
         data = json.loads(text_data)
         move = data["move"]
 
+        await self.update_player_choice(move)
+        await self.check_and_update_game_status()
+
         await self.channel_layer.group_send(
             self.game_id,
             {"type": "forward_move", "player": self.channel_name, "move": move},
         )
+
+    @database_sync_to_async
+    def update_player_choice(self, move):
+        game_session = GameSession.objects.get(id=self.game_id)
+
+        if self.user_id == game_session.player1.id:
+            game_session.player1_choice = move
+        else:
+            game_session.player2_choice = move
+
+        game_session.save()
+
+    @database_sync_to_async
+    def check_and_update_game_status(self):
+        game_session = GameSession.objects.get(id=self.game_id)
+
+        if game_session.player1_choice and game_session.player2_choice:
+            game_session.winner = game_session.determine_winner()
+            game_session.status = "completed"
+            game_session.save()
 
     async def forward_move(self, event):
         player = event["player"]
