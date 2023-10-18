@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, { useContext, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DataContext } from '../App';
 import AuthContext from '../context/AuthContext';
@@ -7,14 +7,10 @@ import AuthContext from '../context/AuthContext';
 const HomePage = () => {
     const { authTokens, logoutUser, user } = useContext(AuthContext);
     const [profile, setProfile] = useState([]);
-    const [waitingForOpponent, setWaitingForOpponent] = useState(false);
+    const [waitingForOpponent, setWaitingForOpponent] = useState(false)
     const navigate = useNavigate();
     const { socketRef } = useContext(DataContext)
     const gameIdRef = useRef();
-
-    useEffect(() => {
-        getProfile();
-    }, []);
 
     const getProfile = async() => {
         let response = await fetch('http://127.0.0.1:8000/api/profile', {

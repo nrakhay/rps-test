@@ -86,10 +86,40 @@ const GamePage = () => {
           </>
         )}
 
+        { winner && (selected || opponentMove) && (
+          <div className="flex w-full justify-between mt-4 space-x-4">
+            <ChoiceCard title="Your Choice" choice={selected} />
+            <ChoiceCard title="Opponent's Choice" choice={opponentMove} />
+          </div>
+        )}
+
         {winner === "won" && <p className="text-2xl text-green-600 font-bold mb-4">You won!</p>}
         {winner === "lost" && <p className="text-2xl text-red-600 font-bold mb-4">You lost!</p>}
         {winner === "tie" && <p className="text-2xl text-yellow-600 font-bold mb-4">It's a tie!</p>}
       </div>
+    </div>
+  );
+};
+
+const ChoiceIcon = ({ choice }) => {
+  switch (choice) {
+    case "rock":
+      return "✊";
+    case "paper":
+      return "✋";
+    case "scissors":
+      return "✌️";
+    default:
+      return "?";
+  }
+};
+
+const ChoiceCard = ({ title, choice }) => {
+  return (
+    <div className="flex-none w-1/2 bg-gradient-to-br from-indigo-400 to-blue-500 border p-4 rounded-lg text-center shadow-xl transform hover:scale-105 transition-transform duration-300">
+      <h2 className="font-bold text-white mb-2">{title}</h2>
+      <div className="text-6xl">{<ChoiceIcon choice={choice} />}</div>
+      <p className="text-white text-xl mt-2">{choice || "Not Chosen"}</p>
     </div>
   );
 };
