@@ -8,28 +8,10 @@ const wsUrl = process.env.REACT_APP_WS_URL
 
 const HomePage = () => {
     const { authTokens, logoutUser, user } = useContext(AuthContext);
-    const [profile, setProfile] = useState([]);
     const [waitingForOpponent, setWaitingForOpponent] = useState(false)
     const navigate = useNavigate();
     const { socketRef } = useContext(DataContext)
     const gameIdRef = useRef();
-
-    const getProfile = async() => {
-        let response = await fetch(`${baseUrl}/api/profile`, {
-        method: 'GET',
-        headers:{
-            'Content-Type': 'application/json',
-            'Authorization':'Bearer ' + String(authTokens.access)
-        }
-        })
-        let data = await response.json()
-        console.log(data)
-        if(response.status === 200){
-            setProfile(data)
-        } else if(response.statusText === 'Unauthorized'){
-            logoutUser()
-        }
-    }
 
     const handleStart = async () => {
         const response = await fetch(`${baseUrl}/api/games/connect?username=${user.username}`, {

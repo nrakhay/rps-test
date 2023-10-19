@@ -7,7 +7,6 @@ const AuthContext = createContext()
 export default AuthContext;
 
 const baseUrl = process.env.REACT_APP_BASE_URL
-const wsUrl = process.env.REACT_APP_WS_URL
 
 export const AuthProvider = ({children}) => {
 

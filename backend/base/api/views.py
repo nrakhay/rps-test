@@ -15,9 +15,11 @@ from base.serializer import (
     GameSessionSerializer,
     PlayerSerializer,
     PlayerStatisticsSerializer,
+    UserRegistrationSerializer,
 )
 from rest_framework import generics, status
 from rest_framework.generics import GenericAPIView
+from rest_framework.views import APIView
 
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
@@ -32,6 +34,20 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class MyTokenObtainPairView(TokenObtainPairView):
     serializer_class = MyTokenObtainPairSerializer
+
+
+class UserRegistrationView(APIView):
+    serializer_class = UserRegistrationSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"detail": "User registered successfully!"},
+                status=status.HTTP_201_CREATED,
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class ListAllGamesView(generics.ListAPIView):

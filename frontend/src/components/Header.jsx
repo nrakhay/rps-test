@@ -18,7 +18,10 @@ const Header = () => {
                         Logout
                     </button>
                 ) : (
-                    <Link to="/login" className="text-white hover:text-indigo-200 px-4 py-2 rounded transition">Login</Link>
+                    <>
+                        <Link to="/login" className="text-white hover:text-indigo-200 px-4 py-2 rounded transition">Login</Link>
+                        <Link to="/register" className="text-white hover:text-indigo-200 px-4 py-2 rounded transition">Register</Link>
+                    </>
                 )}
             </div>
         </div>
